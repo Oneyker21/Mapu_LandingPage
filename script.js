@@ -3,6 +3,10 @@
 // Variables globales
 let isMenuOpen = false;
 let isScrolling = false;
+let formSubmissionAttempts = 0;
+let lastFormSubmission = 0;
+const MAX_FORM_ATTEMPTS = 3;
+const FORM_COOLDOWN_TIME = 300000; // 5 minutos en milisegundos
 
 // Elementos DOM
 const navToggle = document.getElementById('nav-toggle');
@@ -224,35 +228,57 @@ function handleFormSubmit(e) {
     e.preventDefault();
     
     const form = e.target;
-    const formData = new FormData(form);
     const submitBtn = form.querySelector('.form-submit');
+    const currentTime = Date.now();
+    
+    // Verificar rate limiting
+    if (formSubmissionAttempts >= MAX_FORM_ATTEMPTS) {
+        const timeSinceLastSubmission = currentTime - lastFormSubmission;
+        if (timeSinceLastSubmission < FORM_COOLDOWN_TIME) {
+            const remainingTime = Math.ceil((FORM_COOLDOWN_TIME - timeSinceLastSubmission) / 60000);
+            SecurityLogger.logFormAbuse(formSubmissionAttempts, timeSinceLastSubmission);
+            showNotification(`Demasiados intentos. Espera ${remainingTime} minutos antes de intentar nuevamente.`, 'error');
+            return;
+        } else {
+            // Resetear contador si ha pasado el tiempo de cooldown
+            formSubmissionAttempts = 0;
+        }
+    }
     
     // Validar todos los campos
     const isValid = validateForm(form);
     if (!isValid) {
         showNotification('Por favor, corrige los errores en el formulario', 'error');
+        formSubmissionAttempts++;
         return;
     }
+    
+    // Incrementar contador de intentos
+    formSubmissionAttempts++;
+    lastFormSubmission = currentTime;
     
     // Mostrar estado de carga
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
     submitBtn.disabled = true;
     
-    // Obtener datos del formulario
-    const name = form.querySelector('input[type="text"]').value;
-    const email = form.querySelector('input[type="email"]').value;
-    const message = form.querySelector('textarea').value;
+    // Obtener y sanitizar datos del formulario
+    const name = sanitizeInput(form.querySelector('input[type="text"]').value);
+    const email = sanitizeInput(form.querySelector('input[type="email"]').value);
+    const message = sanitizeInput(form.querySelector('textarea').value);
     
-    // Crear el cuerpo del email
-    const emailBody = `
-        Nombre: ${name}
-        Email: ${email}
-        Mensaje: ${message}
-        
-        Enviado desde la landing page de Mapu.
-    `;
+    // Validación adicional de seguridad
+    if (detectSuspiciousPatterns(name) || detectSuspiciousPatterns(email) || detectSuspiciousPatterns(message)) {
+        SecurityLogger.logSuspiciousActivity('FORM_XSS_ATTEMPT', `${name}|${email}|${message}`);
+        showNotification('Contenido no permitido detectado. Por favor, revisa tu mensaje.', 'error');
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
+        submitBtn.disabled = false;
+        return;
+    }
     
-    // Crear el enlace de mailto con los datos
+    // Crear el cuerpo del email de forma segura
+    const emailBody = `Nombre: ${name}\nEmail: ${email}\nMensaje: ${message}\n\nEnviado desde la landing page de Mapu.`;
+    
+    // Crear el enlace de mailto con los datos sanitizados
     const mailtoLink = `mailto:legendscode2025@gmail.com?subject=Contacto desde Mapu Landing Page&body=${encodeURIComponent(emailBody)}`;
     
     // Abrir el cliente de email
@@ -264,6 +290,9 @@ function handleFormSubmit(e) {
         form.reset();
         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Mensaje';
         submitBtn.disabled = false;
+        
+        // Resetear contador después de envío exitoso
+        formSubmissionAttempts = 0;
     }, 1000);
 }
 
@@ -280,32 +309,75 @@ function validateForm(form) {
     return isValid;
 }
 
+// Función para sanitizar texto y prevenir XSS
+function sanitizeInput(input) {
+    return input
+        .replace(/[<>]/g, '') // Remover caracteres HTML básicos
+        .replace(/javascript:/gi, '') // Remover javascript:
+        .replace(/on\w+=/gi, '') // Remover event handlers
+        .trim();
+}
+
+// Función para validar longitud y caracteres permitidos
+function validateInputLength(value, minLength, maxLength = 1000) {
+    return value.length >= minLength && value.length <= maxLength;
+}
+
+// Función para detectar patrones sospechosos
+function detectSuspiciousPatterns(value) {
+    const suspiciousPatterns = [
+        /<script/i,
+        /javascript:/i,
+        /on\w+\s*=/i,
+        /data:text\/html/i,
+        /vbscript:/i,
+        /expression\s*\(/i
+    ];
+    
+    return suspiciousPatterns.some(pattern => pattern.test(value));
+}
+
 function validateField(e) {
     const field = e.target;
-    const value = field.value.trim();
+    const value = sanitizeInput(field.value);
     const fieldType = field.type;
     let isValid = true;
     let errorMessage = '';
     
+    // Verificar patrones sospechosos
+    if (detectSuspiciousPatterns(value)) {
+        isValid = false;
+        errorMessage = 'Contenido no permitido detectado';
+        SecurityLogger.logSuspiciousActivity('XSS_ATTEMPT', value);
+        showFieldError(field, errorMessage);
+        return false;
+    }
+    
     // Validaciones específicas por tipo de campo
     switch (fieldType) {
         case 'email':
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             if (!emailRegex.test(value)) {
                 isValid = false;
                 errorMessage = 'Ingresa un email válido';
+            } else if (!validateInputLength(value, 5, 254)) {
+                isValid = false;
+                errorMessage = 'El email debe tener entre 5 y 254 caracteres';
             }
             break;
         case 'text':
-            if (value.length < 2) {
+            if (!validateInputLength(value, 2, 100)) {
                 isValid = false;
-                errorMessage = 'El nombre debe tener al menos 2 caracteres';
+                errorMessage = 'El nombre debe tener entre 2 y 100 caracteres';
+            } else if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(value)) {
+                isValid = false;
+                errorMessage = 'El nombre solo puede contener letras y espacios';
             }
             break;
         default:
-            if (value.length < 10) {
+            if (!validateInputLength(value, 10, 2000)) {
                 isValid = false;
-                errorMessage = 'El mensaje debe tener al menos 10 caracteres';
+                errorMessage = 'El mensaje debe tener entre 10 y 2000 caracteres';
             }
     }
     
@@ -588,6 +660,17 @@ window.addEventListener('load', () => {
     initializeEntranceAnimations();
     initializeAdvancedFormFeatures();
     
+    // Inicializar sistemas de seguridad
+    detectAutomation();
+    antiDebugging();
+    detectDevTools();
+    
+    // Log de carga exitosa
+    SecurityLogger.logSecurityEvent('PAGE_LOADED', {
+        loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
+        userAgent: navigator.userAgent
+    });
+    
     // Mostrar mensaje de bienvenida
     setTimeout(() => {
         showNotification('¡Bienvenido a Mapu! Descubre los mejores destinos de Nicaragua.', 'success');
@@ -622,11 +705,118 @@ function initializeAdvancedFormFeatures() {
     }
 }
 
+// ===== SISTEMA DE LOGGING DE SEGURIDAD =====
+const SecurityLogger = {
+    logSecurityEvent: function(eventType, details) {
+        const logEntry = {
+            timestamp: new Date().toISOString(),
+            eventType: eventType,
+            details: details,
+            userAgent: navigator.userAgent,
+            url: window.location.href,
+            referrer: document.referrer
+        };
+        
+        // Log en consola para desarrollo
+        console.warn('Security Event:', logEntry);
+        
+        // En un entorno de producción, aquí enviarías el log a un servidor
+        // fetch('/api/security-log', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(logEntry)
+        // }).catch(err => console.error('Error logging security event:', err));
+    },
+    
+    logSuspiciousActivity: function(activity, input) {
+        this.logSecurityEvent('SUSPICIOUS_ACTIVITY', {
+            activity: activity,
+            input: input.substring(0, 100), // Limitar longitud del log
+            ip: 'client-side' // En el servidor se obtendría la IP real
+        });
+    },
+    
+    logFormAbuse: function(attempts, timeDiff) {
+        this.logSecurityEvent('FORM_ABUSE', {
+            attempts: attempts,
+            timeDifference: timeDiff,
+            maxAttempts: MAX_FORM_ATTEMPTS
+        });
+    }
+};
+
 // ===== MANEJO DE ERRORES =====
 window.addEventListener('error', (e) => {
     console.error('Error en la landing page:', e.error);
+    
+    // Log de errores de seguridad
+    SecurityLogger.logSecurityEvent('JAVASCRIPT_ERROR', {
+        error: e.error?.message || 'Unknown error',
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno
+    });
+    
     showNotification('Ha ocurrido un error. Por favor, recarga la página.', 'error');
 });
+
+// ===== DETECCIÓN DE HERRAMIENTAS DE DESARROLLO =====
+function detectDevTools() {
+    const threshold = 160;
+    setInterval(() => {
+        if (window.outerHeight - window.innerHeight > threshold || 
+            window.outerWidth - window.innerWidth > threshold) {
+            SecurityLogger.logSecurityEvent('DEVTOOLS_DETECTED', {
+                height: window.outerHeight - window.innerHeight,
+                width: window.outerWidth - window.innerWidth
+            });
+        }
+    }, 1000);
+}
+
+// ===== PROTECCIÓN CONTRA DEBUGGING =====
+function antiDebugging() {
+    let devtools = {open: false, orientation: null};
+    const threshold = 160;
+    
+    setInterval(() => {
+        if (window.outerHeight - window.innerHeight > threshold || 
+            window.outerWidth - window.innerWidth > threshold) {
+            if (!devtools.open) {
+                devtools.open = true;
+                SecurityLogger.logSecurityEvent('DEBUGGING_ATTEMPT', {
+                    method: 'window_size_detection'
+                });
+            }
+        } else {
+            devtools.open = false;
+        }
+    }, 500);
+}
+
+// ===== DETECCIÓN DE AUTOMATIZACIÓN =====
+function detectAutomation() {
+    // Detectar Selenium
+    if (window.navigator.webdriver) {
+        SecurityLogger.logSecurityEvent('AUTOMATION_DETECTED', {
+            tool: 'selenium_webdriver'
+        });
+    }
+    
+    // Detectar PhantomJS
+    if (window.callPhantom || window._phantom) {
+        SecurityLogger.logSecurityEvent('AUTOMATION_DETECTED', {
+            tool: 'phantomjs'
+        });
+    }
+    
+    // Detectar Headless Chrome
+    if (navigator.userAgent.includes('HeadlessChrome')) {
+        SecurityLogger.logSecurityEvent('AUTOMATION_DETECTED', {
+            tool: 'headless_chrome'
+        });
+    }
+}
 
 // ===== PERFORMANCE MONITORING =====
 window.addEventListener('load', () => {
