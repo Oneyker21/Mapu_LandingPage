@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapu - Descubre Nicaragua</title>
+    <meta name="description" content="Mapu es la plataforma definitiva para explorar los destinos turísticos de Nicaragua. Conecta turistas con centros turísticos locales.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="mapu.svg" alt="Mapu Logo" class="logo-svg">
+                    <span>Mapu</span>
+                </div>
+                <div class="nav-menu" id="nav-menu">
+                    <a href="#inicio" class="nav-link">Inicio</a>
+                    <a href="#caracteristicas" class="nav-link">Características</a>
+                    <a href="#como-funciona" class="nav-link">Cómo Funciona</a>
+                    <a href="#testimonios" class="nav-link">Testimonios</a>
+                    <a href="#contacto" class="nav-link">Contacto</a>
+                </div>
+                <div class="nav-toggle" id="nav-toggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Descubre los <span class="highlight">mejores destinos</span> de Nicaragua
+                </h1>
+                <p class="hero-subtitle">
+                    Mapu conecta turistas con centros turísticos locales, creando experiencias auténticas y memorables en cada rincón del país.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="scrollToDownload()">
+                        <i class="fas fa-download"></i>
+                        Descargar App
+                    </button>
+                    <button class="btn btn-secondary" onclick="scrollToFeatures()">
+                        <i class="fas fa-play"></i>
+                        Ver Demo
+                    </button>
+                </div>
+                <!-- <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Centros Turísticos</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">Usuarios Activos</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">15</span>
+                        <span class="stat-label">Departamentos</span>
+                    </div>
+                </div> -->
+            </div>
+            <div class="hero-image">
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <img src="Mapu-Charging.png" alt="Mapu App Screenshot" class="app-screenshot">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="caracteristicas" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">¿Por qué elegir Mapu?</h2>
+                <p class="section-subtitle">Una plataforma diseñada para revolucionar el turismo en Nicaragua</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Exploración Inteligente</h3>
+                    <p class="feature-description">
+                        Descubre lugares increíbles cerca de ti con nuestra tecnología de geolocalización avanzada.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3 class="feature-title">Reseñas Auténticas</h3>
+                    <p class="feature-description">
+                        Lee y escribe reseñas reales de otros viajeros para tomar decisiones informadas.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h3 class="feature-title">Rutas Personalizadas</h3>
+                    <p class="feature-description">
+                        Crea y comparte rutas personalizadas para maximizar tu experiencia turística.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="feature-title">Reservaciones Fáciles</h3>
+                    <p class="feature-description">
+                        Reserva directamente en centros turísticos sin intermediarios ni complicaciones.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="feature-title">Comunidad Activa</h3>
+                    <p class="feature-description">
+                        Únete a una comunidad de viajeros apasionados y comparte tus experiencias.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3 class="feature-title">Seguro y Confiable</h3>
+                    <p class="feature-description">
+                        Todos los centros están verificados y la plataforma es 100% segura.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it Works Section -->
+    <section id="como-funciona" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Cómo funciona Mapu</h2>
+                <p class="section-subtitle">En solo 3 simples pasos</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Descarga la App</h3>
+                        <p class="step-description">
+                            Descarga Mapu desde tu tienda de aplicaciones favorita y crea tu cuenta.
+                        </p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Explora y Descubre</h3>
+                        <p class="step-description">
+                            Busca centros turísticos cerca de ti, lee reseñas y descubre lugares increíbles.
+                        </p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="step-title">Vive la Experiencia</h3>
+                        <p class="step-description">
+                            Reserva, visita y comparte tu experiencia con la comunidad Mapu.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonios" class="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Lo que dicen nuestros usuarios</h2>
+                <p class="section-subtitle">Experiencias reales de la comunidad Mapu</p>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "Mapu me ha permitido descubrir lugares increíbles en Nicaragua que no conocía. La interfaz es súper intuitiva y las reseñas son muy útiles."
+                        </p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar"></div>
+                        <div class="author-info">
+                            <h4 class="author-name">María González</h4>
+                            <p class="author-role">Turista</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "Como propietario de un centro turístico, Mapu me ha ayudado a llegar a más visitantes y gestionar mis reservaciones de manera eficiente."
+                        </p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar"></div>
+                        <div class="author-info">
+                            <h4 class="author-name">Carlos Mendoza</h4>
+                            <p class="author-role">Centro Turístico</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <div class="stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p class="testimonial-text">
+                            "Las rutas personalizadas son geniales. He creado varias rutas para mis amigos y familiares, y todos quedan encantados."
+                        </p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-avatar"></div>
+                        <div class="author-info">
+                            <h4 class="author-name">Ana Rodríguez</h4>
+                            <p class="author-role">Guía Turística</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download">
+        <div class="container">
+            <div class="download-content">
+                <div class="download-text">
+                    <h2 class="download-title">¿Listo para explorar Nicaragua?</h2>
+                    <p class="download-subtitle">
+                        Descarga Mapu ahora y comienza tu aventura turística. Disponible para iOS y Android.
+                    </p>
+                    <div class="download-buttons">
+                        <button class="download-btn">
+                            <i class="fab fa-apple"></i>
+                            <div class="btn-text">
+                                <span class="btn-small">Descargar en</span>
+                                <span class="btn-large">App Store</span>
+                            </div>
+                        </button>
+                        <button class="download-btn">
+                            <i class="fab fa-google-play"></i>
+                            <div class="btn-text">
+                                <span class="btn-small">Disponible en</span>
+                                <span class="btn-large">Google Play</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div class="download-image">
+                    <div class="phones-showcase">
+                        <div class="phone phone-1"></div>
+                        <div class="phone phone-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contacto" class="contact">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2 class="contact-title">¿Tienes preguntas?</h2>
+                    <p class="contact-subtitle">
+                        Estamos aquí para ayudarte. Contáctanos y te responderemos lo antes posible.
+                    </p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>legendscode2025@gmail.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+505 5760 5360</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Juigalpa, Chontales. Nicaragua</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form class="form">
+                        <div class="form-group">
+                            <input type="text" class="form-input" placeholder="Tu nombre" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" class="form-input" placeholder="Tu email" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea class="form-input form-textarea" placeholder="Tu mensaje" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary form-submit">
+                            <i class="fas fa-paper-plane"></i>
+                            Enviar Mensaje
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="mapu.svg" alt="Mapu Logo" class="logo-svg">
+                        <span>Mapu</span>
+                    </div>
+                    <p class="footer-description">
+                        Conectando turistas con los mejores destinos de Nicaragua. Descubre, explora y vive experiencias únicas.
+                    </p>
+                    <div class="social-links">
+                        <a href="https://www.instagram.com/mapu.nic1?igsh=aHB6aGl1ZDZ3aDhm&utm_source=qr" target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="https://www.facebook.com/share/1BF7hWahAK/?mibextid=wwXIfr" target="_blank" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-tiktok"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Enlaces Rápidos</h3>
+                    <ul class="footer-links">
+                        <li><a href="#inicio">Inicio</a></li>
+                        <li><a href="#caracteristicas">Características</a></li>
+                        <li><a href="#como-funciona">Cómo Funciona</a></li>
+                        <li><a href="#testimonios">Testimonios</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Soporte</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Centro de Ayuda</a></li>
+                        <li><a href="#">Política de Privacidad</a></li>
+                        <li><a href="#">Términos de Servicio</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3 class="footer-title">Descargar App</h3>
+                    <div class="footer-download">
+                        <button class="footer-download-btn">
+                            <i class="fab fa-apple"></i>
+                            <div class="btn-text">
+                                <span class="btn-small">Descargar en</span>
+                                <span class="btn-large">App Store</span>
+                            </div>
+                        </button>
+                        <button class="footer-download-btn">
+                            <i class="fab fa-google-play"></i>
+                            <div class="btn-text">
+                                <span class="btn-small">Disponible en</span>
+                                <span class="btn-large">Google Play</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Mapu. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
