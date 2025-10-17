@@ -1455,6 +1455,12 @@ html {
     border-radius: var(--border-radius-2xl);
     padding: 6px;
     box-shadow: var(--shadow-xl);
+    transition: all 0.3s ease;
+}
+
+.phone-mockup-large:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .phone-screen-large {
@@ -1470,6 +1476,14 @@ html {
     height: 100%;
     object-fit: cover;
     border-radius: var(--border-radius-xl);
+    transition: all 0.4s ease;
+    cursor: pointer;
+}
+
+.screenshot-img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 15px 35px rgba(74, 222, 128, 0.4);
+    border: 3px solid var(--primary);
 }
 
 .screenshot-img-small {
@@ -1477,6 +1491,14 @@ html {
     height: 100%;
     object-fit: cover;
     border-radius: var(--border-radius-lg);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.screenshot-img-small:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(74, 222, 128, 0.3);
+    border: 2px solid var(--primary);
 }
 
 .screenshot-info {
