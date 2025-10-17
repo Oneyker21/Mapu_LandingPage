@@ -1537,6 +1537,12 @@ html {
     padding: 4px;
     box-shadow: var(--shadow-lg);
     margin: 0 auto var(--spacing-4);
+    transition: all 0.3s ease;
+}
+
+.phone-mockup-small:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
 }
 
 .phone-screen-small {
@@ -1573,12 +1579,22 @@ html {
     font-weight: 600;
     color: var(--text-primary);
     margin-bottom: var(--spacing-2);
+    transition: color 0.3s ease;
 }
 
 .screenshot-item p {
     color: var(--text-muted);
     font-size: var(--font-size-sm);
     line-height: 1.6;
+    transition: color 0.3s ease;
+}
+
+.screenshot-item:hover h4 {
+    color: var(--primary);
+}
+
+.screenshot-item:hover p {
+    color: var(--text-primary);
 }
 
 /* Responsive para nuevas secciones */
