@@ -8,6 +8,9 @@ let lastFormSubmission = 0;
 const MAX_FORM_ATTEMPTS = 3;
 const FORM_COOLDOWN_TIME = 300000; // 5 minutos en milisegundos
 
+// Tiempo de carga de la página
+window.pageLoadTime = Date.now();
+
 // Elementos DOM
 const navToggle = document.getElementById('nav-toggle');
 const navMenu = document.getElementById('nav-menu');
@@ -16,11 +19,16 @@ const header = document.querySelector('.header');
 
 // Inicialización cuando el DOM está listo
 document.addEventListener('DOMContentLoaded', function() {
-    initializeNavigation();
-    initializeScrollEffects();
-    initializeAnimations();
-    initializeFormHandling();
-    initializeCounters();
+    try {
+        initializeNavigation();
+        initializeScrollEffects();
+        initializeAnimations();
+        initializeFormHandling();
+        initializeCounters();
+    } catch (error) {
+        console.warn('Error durante la inicialización:', error);
+        // No mostrar notificación al usuario, solo log en consola
+    }
 });
 
 // ===== NAVEGACIÓN =====
@@ -423,6 +431,11 @@ function clearFieldError(field) {
 
 // ===== NOTIFICACIONES =====
 function showNotification(message, type = 'info') {
+    // No mostrar notificaciones durante los primeros 2 segundos después del load
+    if (Date.now() - window.pageLoadTime < 2000 && type === 'error') {
+        return;
+    }
+    
     // Remover notificación existente
     const existingNotification = document.querySelector('.notification');
     if (existingNotification) {
@@ -755,28 +768,33 @@ function initializeEntranceAnimations() {
 
 // ===== INICIALIZACIÓN COMPLETA =====
 window.addEventListener('load', () => {
-    // Inicializar efectos adicionales
-    initializeParallax();
-    initializeLazyLoading();
-    initializeThemeToggle();
-    initializeEntranceAnimations();
-    initializeAdvancedFormFeatures();
-    
-    // Inicializar sistemas de seguridad
-    detectAutomation();
-    antiDebugging();
-    detectDevTools();
-    
-    // Log de carga exitosa
-    SecurityLogger.logSecurityEvent('PAGE_LOADED', {
-        loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
-        userAgent: navigator.userAgent
-    });
-    
-    // Mostrar mensaje de bienvenida
-    setTimeout(() => {
-        showNotification('¡Bienvenido a Mapu! Descubre los mejores destinos de Nicaragua.', 'success');
-    }, 1000);
+    try {
+        // Inicializar efectos adicionales
+        initializeParallax();
+        initializeLazyLoading();
+        initializeThemeToggle();
+        initializeEntranceAnimations();
+        initializeAdvancedFormFeatures();
+        
+        // Inicializar sistemas de seguridad
+        detectAutomation();
+        antiDebugging();
+        detectDevTools();
+        
+        // Log de carga exitosa
+        SecurityLogger.logSecurityEvent('PAGE_LOADED', {
+            loadTime: performance.timing.loadEventEnd - performance.timing.navigationStart,
+            userAgent: navigator.userAgent
+        });
+        
+        // Mostrar mensaje de bienvenida solo si no hay errores
+        setTimeout(() => {
+            showNotification('¡Bienvenido a Mapu! Descubre los mejores destinos de Nicaragua.', 'success');
+        }, 1000);
+    } catch (error) {
+        console.warn('Error durante la carga completa:', error);
+        // No mostrar notificación de error, solo log en consola
+    }
 });
 
 // ===== FUNCIONALIDAD ADICIONAL DEL FORMULARIO =====
@@ -859,7 +877,27 @@ window.addEventListener('error', (e) => {
         colno: e.colno
     });
     
-    showNotification('Ha ocurrido un error. Por favor, recarga la página.', 'error');
+    // Solo mostrar notificación para errores críticos que realmente requieren recarga
+    const isCriticalError = e.error && (
+        e.error.message.includes('Cannot read property') ||
+        e.error.message.includes('Cannot access') ||
+        e.error.message.includes('ReferenceError') ||
+        e.error.message.includes('TypeError') ||
+        e.error.message.includes('Script error')
+    );
+    
+    // No mostrar notificación para errores menores, del chatbot, o errores de red
+    const shouldShowNotification = isCriticalError && 
+        e.filename && 
+        e.filename.includes('script.js') && 
+        !e.error?.message?.includes('chatbot') &&
+        !e.error?.message?.includes('Network') &&
+        !e.error?.message?.includes('fetch') &&
+        !e.error?.message?.includes('XMLHttpRequest');
+    
+    if (shouldShowNotification) {
+        showNotification('Ha ocurrido un error. Por favor, recarga la página.', 'error');
+    }
 });
 
 // ===== DETECCIÓN DE HERRAMIENTAS DE DESARROLLO =====
@@ -935,6 +973,496 @@ window.addEventListener('load', () => {
             });
         }
     });
+});
+
+// ===== CHATBOT FLOTANTE =====
+
+// Variables del chatbot
+let chatbotOpen = false;
+let chatbotMessages = [];
+let isTyping = false;
+
+// Elementos del chatbot (se inicializarán cuando el DOM esté listo)
+let chatbotContainer;
+let chatbotToggle;
+let chatbotWindow;
+let chatbotClose;
+let chatbotMessagesContainer;
+let chatbotInput;
+let chatbotSendBtn;
+let chatbotNotification;
+
+// Inicializar chatbot
+function initializeChatbot() {
+    // Obtener elementos del DOM de forma segura
+    chatbotContainer = document.getElementById('chatbot-container');
+    chatbotToggle = document.getElementById('chatbot-toggle');
+    chatbotWindow = document.getElementById('chatbot-window');
+    chatbotClose = document.getElementById('chatbot-close');
+    chatbotMessagesContainer = document.getElementById('chatbot-messages');
+    chatbotInput = document.getElementById('chatbot-input');
+    chatbotSendBtn = document.getElementById('chatbot-send');
+    chatbotNotification = document.getElementById('chatbot-notification');
+    
+    // Verificar que todos los elementos existen
+    if (!chatbotContainer || !chatbotToggle || !chatbotWindow || 
+        !chatbotClose || !chatbotMessagesContainer || !chatbotInput || 
+        !chatbotSendBtn || !chatbotNotification) {
+        console.warn('Algunos elementos del chatbot no se encontraron');
+        return;
+    }
+    
+    // Event listeners
+    chatbotToggle.addEventListener('click', toggleChatbot);
+    chatbotClose.addEventListener('click', closeChatbot);
+    chatbotSendBtn.addEventListener('click', sendMessage);
+    chatbotInput.addEventListener('keypress', handleInputKeypress);
+    
+    // Opciones rápidas
+    document.querySelectorAll('.quick-option').forEach(option => {
+        option.addEventListener('click', () => handleQuickOption(option.dataset.option));
+    });
+    
+    // Categorías
+    document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', () => handleCategoryClick(btn.dataset.category));
+    });
+    
+    // Cerrar chatbot al hacer click fuera
+    document.addEventListener('click', (e) => {
+        if (chatbotOpen && chatbotContainer && !chatbotContainer.contains(e.target)) {
+            closeChatbot();
+        }
+    });
+    
+    // Mostrar notificación después de 3 segundos
+    setTimeout(() => {
+        showChatbotNotification();
+    }, 3000);
+}
+
+// Toggle del chatbot
+function toggleChatbot() {
+    if (chatbotOpen) {
+        closeChatbot();
+    } else {
+        openChatbot();
+    }
+}
+
+// Abrir chatbot
+function openChatbot() {
+    if (!chatbotWindow || !chatbotInput || !chatbotToggle) return;
+    
+    chatbotOpen = true;
+    chatbotWindow.classList.add('show');
+    chatbotInput.focus();
+    hideChatbotNotification();
+    
+    // Animar el botón
+    chatbotToggle.style.transform = 'scale(1.1)';
+    setTimeout(() => {
+        if (chatbotToggle) {
+            chatbotToggle.style.transform = '';
+        }
+    }, 200);
+}
+
+// Cerrar chatbot
+function closeChatbot() {
+    if (!chatbotWindow || !chatbotInput) return;
+    
+    chatbotOpen = false;
+    chatbotWindow.classList.remove('show');
+    chatbotInput.blur();
+}
+
+// Mostrar notificación
+function showChatbotNotification() {
+    if (!chatbotOpen && chatbotNotification) {
+        chatbotNotification.classList.add('show');
+        chatbotNotification.textContent = '1';
+    }
+}
+
+// Ocultar notificación
+function hideChatbotNotification() {
+    if (chatbotNotification) {
+        chatbotNotification.classList.remove('show');
+    }
+}
+
+// Manejar tecla Enter en el input
+function handleInputKeypress(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+}
+
+// Enviar mensaje
+function sendMessage() {
+    if (!chatbotInput) return;
+    
+    const message = chatbotInput.value.trim();
+    if (!message || isTyping) return;
+    
+    // Agregar mensaje del usuario
+    addUserMessage(message);
+    chatbotInput.value = '';
+    
+    // Mostrar indicador de escritura
+    showTypingIndicator();
+    
+    // Simular respuesta del bot con tiempo variable
+    setTimeout(() => {
+        hideTypingIndicator();
+        const response = getBotResponse(message.toLowerCase());
+        addBotMessage(response.message, response.options);
+    }, 1500 + Math.random() * 1000); // Tiempo variable entre 1.5-2.5 segundos
+}
+
+// Agregar mensaje del usuario
+function addUserMessage(message) {
+    if (!chatbotMessagesContainer) return;
+    
+    const messageElement = createMessageElement(message, 'user');
+    chatbotMessagesContainer.appendChild(messageElement);
+    scrollToBottom();
+}
+
+// Agregar mensaje del bot
+function addBotMessage(message, options = null) {
+    if (!chatbotMessagesContainer) return;
+    
+    const messageElement = createMessageElement(message, 'bot', options);
+    chatbotMessagesContainer.appendChild(messageElement);
+    scrollToBottom();
+}
+
+// Crear elemento de mensaje
+function createMessageElement(message, type, options = null) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    if (type === 'bot') {
+        avatar.innerHTML = '<img src="mapu.svg" alt="Mapu" style="width: 14px; height: 14px;">';
+    } else {
+        avatar.innerHTML = '<i class="fas fa-user"></i>';
+    }
+    
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    
+    const messageP = document.createElement('p');
+    messageP.textContent = message;
+    content.appendChild(messageP);
+    
+    // Agregar opciones si existen
+    if (options && type === 'bot') {
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'quick-options';
+        
+        options.forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'quick-option';
+            button.textContent = option.text;
+            button.dataset.option = option.value;
+            button.addEventListener('click', () => handleQuickOption(option.value));
+            optionsDiv.appendChild(button);
+        });
+        
+        content.appendChild(optionsDiv);
+    }
+    
+    messageDiv.appendChild(avatar);
+    messageDiv.appendChild(content);
+    
+    return messageDiv;
+}
+
+// Mostrar indicador de escritura
+function showTypingIndicator() {
+    if (isTyping || !chatbotMessagesContainer) return;
+    
+    isTyping = true;
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'typing-indicator';
+    typingDiv.id = 'typing-indicator';
+    
+    const avatar = document.createElement('div');
+    avatar.className = 'message-avatar';
+    avatar.innerHTML = '<img src="mapu.svg" alt="Mapu" style="width: 14px; height: 14px;">';
+    
+    const content = document.createElement('div');
+    content.className = 'message-content';
+    
+    const dotsDiv = document.createElement('div');
+    dotsDiv.className = 'typing-dots';
+    dotsDiv.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    
+    content.appendChild(dotsDiv);
+    typingDiv.appendChild(avatar);
+    typingDiv.appendChild(content);
+    
+    chatbotMessagesContainer.appendChild(typingDiv);
+    scrollToBottom();
+}
+
+// Ocultar indicador de escritura
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+    }
+    isTyping = false;
+}
+
+// Función para simular respuesta del bot (ya no se usa directamente)
+// function handleBotResponse(userMessage) {
+//     showTypingIndicator();
+//     
+//     setTimeout(() => {
+//         hideTypingIndicator();
+//         
+//         const response = getBotResponse(userMessage.toLowerCase());
+//         addBotMessage(response.message, response.options);
+//     }, 1500);
+// }
+
+// Obtener respuesta del bot
+function getBotResponse(message) {
+    // Respuestas predefinidas basadas en el contexto solicitado
+    const responses = {
+        // Saludos
+        'hola': {
+            message: '¡Hola! ¿En qué puedo ayudarte hoy?',
+            options: [
+                { text: '🗺️ Buscar mapa turístico', value: 'mapa' },
+                { text: '❓ ¿Cómo funciona la app?', value: 'funciona' },
+                { text: '⭐ Recomendaciones', value: 'recomendacion' },
+                { text: '🔥 Destinos populares', value: 'destinos' }
+            ]
+        },
+        'buenos días': {
+            message: '¡Buenos días! ¿Te gustaría explorar algún destino en Nicaragua?',
+            options: [
+                { text: '🌴 Playas', value: 'playa' },
+                { text: '🏞 Naturaleza', value: 'naturaleza' },
+                { text: '🏛 Cultura', value: 'cultura' }
+            ]
+        },
+        'buenas tardes': {
+            message: '¡Buenas tardes! ¿Qué tipo de experiencia turística buscas?',
+            options: [
+                { text: '🍴 Gastronomía', value: 'gastronomia' },
+                { text: '🏛 Cultura e historia', value: 'cultura' },
+                { text: '🌴 Playas', value: 'playa' }
+            ]
+        },
+        'buenas noches': {
+            message: '¡Buenas noches! ¿Planeando tu próximo viaje por Nicaragua?',
+            options: [
+                { text: '🗺️ Ver mapa interactivo', value: 'mapa' },
+                { text: '⭐ Recomendaciones', value: 'recomendacion' }
+            ]
+        },
+        
+        // Búsqueda de mapas
+        'mapa': {
+            message: '¿Estás buscando un mapa turístico de alguna ciudad o destino específico? Te puedo ayudar a encontrar los mejores lugares en Nicaragua.',
+            options: [
+                { text: '🏙️ Managua', value: 'managua' },
+                { text: '🏖️ Granada', value: 'granada' },
+                { text: '🌋 León', value: 'leon' },
+                { text: '🌊 San Juan del Sur', value: 'san_juan' }
+            ]
+        },
+        'buscar mapa': {
+            message: '¡Perfecto! Mapu tiene mapas interactivos de todo Nicaragua. ¿Qué ciudad te interesa explorar?',
+            options: [
+                { text: '🗺️ Ver mapa general', value: 'mapa_general' },
+                { text: '🏙️ Ciudades principales', value: 'ciudades' }
+            ]
+        },
+        
+        // Cómo funciona la app
+        'funciona': {
+            message: '¿Ya conoces cómo funciona nuestra app de mapas turísticos? Te explico:',
+            options: [
+                { text: '📱 Descargar app', value: 'descargar' },
+                { text: '🗺️ Explorar mapas', value: 'explorar' },
+                { text: '⭐ Ver reseñas', value: 'reseñas' }
+            ]
+        },
+        'cómo funciona': {
+            message: 'Mapu es súper fácil de usar:\n\n1️⃣ Descarga la app\n2️⃣ Explora lugares cerca de ti\n3️⃣ Lee reseñas de otros viajeros\n4️⃣ Crea tus rutas personalizadas\n\n¿Quieres que te explique algún paso específico?',
+            options: [
+                { text: '📱 Descargar ahora', value: 'descargar' },
+                { text: '🎯 Ver demo', value: 'demo' }
+            ]
+        },
+        
+        // Recomendaciones
+        'recomendacion': {
+            message: '¿Quieres que te recomiende un mapa según tus intereses?',
+            options: [
+                { text: '🌴 Playas', value: 'playa' },
+                { text: '🏞 Naturaleza', value: 'naturaleza' },
+                { text: '🏛 Cultura e historia', value: 'cultura' },
+                { text: '🍴 Gastronomía', value: 'gastronomia' }
+            ]
+        },
+        'recomendaciones': {
+            message: '¡Excelente! Basándome en tus intereses, te puedo recomendar los mejores destinos de Nicaragua. ¿Qué tipo de experiencia buscas?',
+            options: [
+                { text: '🌊 Relajación en playa', value: 'playa_relax' },
+                { text: '🥾 Aventura y naturaleza', value: 'aventura' },
+                { text: '📚 Cultura e historia', value: 'cultura_historia' },
+                { text: '🍽️ Experiencia gastronómica', value: 'gastronomia_experiencia' }
+            ]
+        },
+        
+        // Destinos populares
+        'destinos': {
+            message: '¿Deseas ver los destinos más populares del momento?',
+            options: [
+                { text: '🔥 Top 5 destinos', value: 'top5' },
+                { text: '⭐ Mejor valorados', value: 'valorados' },
+                { text: '🆕 Destinos nuevos', value: 'nuevos' }
+            ]
+        },
+        'populares': {
+            message: 'Los destinos más populares en Mapu son:\n\n🏖️ San Juan del Sur\n🏛️ Granada\n🌋 León\n🏞️ Ometepe\n🌊 Corn Islands\n\n¿Te interesa alguno en particular?',
+            options: [
+                { text: '🏖️ San Juan del Sur', value: 'san_juan_detalle' },
+                { text: '🏛️ Granada', value: 'granada_detalle' },
+                { text: '🌋 León', value: 'leon_detalle' }
+            ]
+        },
+        
+        // Categorías específicas
+        'playa': {
+            message: '🌴 ¡Las mejores playas de Nicaragua! Te recomiendo:\n\n• San Juan del Sur - Surf y vida nocturna\n• Corn Islands - Aguas cristalinas\n• Playa Maderas - Surf y relajación\n• Playa Hermosa - Tranquilidad\n\n¿Quieres más detalles de alguna?',
+            options: [
+                { text: '🏄 San Juan del Sur', value: 'san_juan_playa' },
+                { text: '🏝️ Corn Islands', value: 'corn_islands' },
+                { text: '🏄 Maderas', value: 'maderas' }
+            ]
+        },
+        'naturaleza': {
+            message: '🏞️ ¡Naturaleza pura en Nicaragua! Descubre:\n\n• Volcán Masaya - Lava activa\n• Isla de Ometepe - Volcanes gemelos\n• Reserva Bosawás - Selva tropical\n• Laguna de Apoyo - Cráter volcánico\n\n¿Cuál te llama más la atención?',
+            options: [
+                { text: '🌋 Volcán Masaya', value: 'masaya' },
+                { text: '🏝️ Ometepe', value: 'ometepe' },
+                { text: '🌲 Bosawás', value: 'bosawas' }
+            ]
+        },
+        'cultura': {
+            message: '🏛️ ¡Rica cultura nicaragüense! Explora:\n\n• Granada - Arquitectura colonial\n• León - Historia y arte\n• Masaya - Artesanías tradicionales\n• Managua - Capital moderna\n\n¿Te interesa la historia colonial o el arte contemporáneo?',
+            options: [
+                { text: '🏛️ Granada colonial', value: 'granada_cultura' },
+                { text: '🎨 León artístico', value: 'leon_cultura' },
+                { text: '🛍️ Masaya artesanal', value: 'masaya_cultura' }
+            ]
+        },
+        'gastronomia': {
+            message: '🍴 ¡Sabores únicos de Nicaragua! Prueba:\n\n• Gallo pinto - Desayuno tradicional\n• Nacatamal - Tamal nicaragüense\n• Vigorón - Plato típico de Granada\n• Quesillo - Snack popular\n\n¿Quieres saber dónde probar estos platillos?',
+            options: [
+                { text: '🍳 Desayunos típicos', value: 'desayunos' },
+                { text: '🌮 Comida callejera', value: 'callejera' },
+                { text: '🍽️ Restaurantes', value: 'restaurantes' }
+            ]
+        },
+        
+        // Descarga de la app
+        'descargar': {
+            message: '📱 ¡Perfecto! Puedes descargar Mapu desde:\n\n• Botón "Descargar App" en la página\n• APK directo disponible\n• Próximamente en Google Play y App Store\n\n¿Quieres que te ayude con la descarga?',
+            options: [
+                { text: '📱 Descargar APK', value: 'descargar_apk' },
+                { text: '❓ Ayuda con descarga', value: 'ayuda_descarga' }
+            ]
+        },
+        
+        // Respuesta por defecto
+        'default': {
+            message: '¡Interesante pregunta! Te puedo ayudar con:\n\n🗺️ Mapas turísticos\n❓ Cómo funciona Mapu\n⭐ Recomendaciones\n🔥 Destinos populares\n🌴 Playas, 🏞️ Naturaleza, 🏛️ Cultura, 🍴 Gastronomía\n\n¿Qué te interesa más?',
+            options: [
+                { text: '🗺️ Ver mapa', value: 'mapa' },
+                { text: '⭐ Recomendaciones', value: 'recomendacion' },
+                { text: '❓ Cómo funciona', value: 'funciona' }
+            ]
+        }
+    };
+    
+    // Buscar respuesta específica
+    for (const [key, response] of Object.entries(responses)) {
+        if (message.includes(key) || key === 'default') {
+            if (key !== 'default') {
+                return response;
+            }
+        }
+    }
+    
+    // Si no encuentra coincidencia, usar respuesta por defecto
+    return responses.default;
+}
+
+// Manejar opciones rápidas
+function handleQuickOption(option) {
+    // Agregar mensaje del usuario (la opción seleccionada)
+    const optionText = document.querySelector(`[data-option="${option}"]`).textContent;
+    addUserMessage(optionText);
+    
+    // Mostrar indicador de escritura
+    showTypingIndicator();
+    
+    // Simular tiempo de respuesta del bot
+    setTimeout(() => {
+        hideTypingIndicator();
+        const response = getBotResponse(option);
+        addBotMessage(response.message, response.options);
+    }, 1500 + Math.random() * 1000); // Tiempo variable entre 1.5-2.5 segundos
+}
+
+// Manejar clic en categorías
+function handleCategoryClick(category) {
+    // Agregar mensaje del usuario (la categoría seleccionada)
+    const categoryText = document.querySelector(`[data-category="${category}"]`).textContent;
+    addUserMessage(categoryText);
+    
+    // Mostrar indicador de escritura
+    showTypingIndicator();
+    
+    // Simular tiempo de respuesta del bot
+    setTimeout(() => {
+        hideTypingIndicator();
+        const response = getBotResponse(category);
+        addBotMessage(response.message, response.options);
+    }, 1500 + Math.random() * 1000); // Tiempo variable entre 1.5-2.5 segundos
+}
+
+// Scroll al final de los mensajes
+function scrollToBottom() {
+    if (!chatbotMessagesContainer) return;
+    
+    setTimeout(() => {
+        if (chatbotMessagesContainer) {
+            chatbotMessagesContainer.scrollTop = chatbotMessagesContainer.scrollHeight;
+        }
+    }, 100);
+}
+
+// Inicializar chatbot cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        initializeChatbot();
+    } catch (error) {
+        console.warn('Error al inicializar el chatbot:', error);
+        // No mostrar error al usuario, el chatbot simplemente no funcionará
+    }
 });
 
 // Exportar funciones para uso global
