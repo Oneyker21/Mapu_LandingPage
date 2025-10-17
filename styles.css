@@ -1077,3 +1077,121 @@ html {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
+
+/* Modal de descarga */
+.download-modal-content {
+    background: var(--surface);
+    border-radius: var(--border-radius-xl);
+    border: 1px solid var(--divider);
+    box-shadow: var(--shadow-xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.download-modal.show .download-modal-content {
+    transform: scale(1);
+}
+
+.download-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-6);
+    border-bottom: 1px solid var(--divider);
+}
+
+.download-modal-header h3 {
+    font-size: var(--font-size-xl);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.download-modal-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: var(--spacing-2);
+    border-radius: var(--border-radius);
+    transition: all 0.3s ease;
+}
+
+.download-modal-close:hover {
+    background: var(--background);
+    color: var(--text-primary);
+}
+
+.download-modal-body {
+    padding: var(--spacing-6);
+}
+
+.download-info {
+    text-align: center;
+}
+
+.download-info i {
+    font-size: var(--font-size-4xl);
+    color: var(--primary);
+    margin-bottom: var(--spacing-4);
+}
+
+.download-info p {
+    font-size: var(--font-size-lg);
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-6);
+}
+
+.download-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+    background: var(--background);
+    padding: var(--spacing-4);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid var(--divider);
+}
+
+.download-details span {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.download-details strong {
+    color: var(--text-primary);
+}
+
+.download-modal-footer {
+    display: flex;
+    gap: var(--spacing-4);
+    padding: var(--spacing-6);
+    border-top: 1px solid var(--divider);
+    justify-content: flex-end;
+}
+
+/* Responsive para el modal */
+@media (max-width: 768px) {
+    .download-modal-content {
+        width: 95%;
+        margin: var(--spacing-4);
+    }
+    
+    .download-modal-header,
+    .download-modal-body,
+    .download-modal-footer {
+        padding: var(--spacing-4);
+    }
+    
+    .download-modal-footer {
+        flex-direction: column;
+    }
+    
+    .download-details {
+        gap: var(--spacing-2);
+    }
+}

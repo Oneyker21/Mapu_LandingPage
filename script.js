@@ -544,6 +544,108 @@ function scrollToDownload() {
     }
 }
 
+// ===== FUNCIÓN DE DESCARGA DE APK =====
+function downloadAPK() {
+    // Crear el modal de confirmación
+    const modal = document.createElement('div');
+    modal.className = 'download-modal';
+    modal.innerHTML = `
+        <div class="download-modal-content">
+            <div class="download-modal-header">
+                <h3>¿Deseas descargar Mapu?</h3>
+                <button class="download-modal-close" onclick="closeDownloadModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="download-modal-body">
+                <div class="download-info">
+                    <i class="fas fa-mobile-alt"></i>
+                    <p>Se descargará la aplicación Mapu para Android</p>
+                    <div class="download-details">
+                        <span><strong>Versión:</strong> 1.0</span>
+                        <span><strong>Tamaño:</strong> ~76.1 MB</span>
+                        <span><strong>Plataforma:</strong> Android</span>
+                    </div>
+                </div>
+            </div>
+            <div class="download-modal-footer">
+                <button class="btn btn-secondary" onclick="closeDownloadModal()">
+                    Cancelar
+                </button>
+                <button class="btn btn-primary" onclick="confirmDownload()">
+                    <i class="fas fa-download"></i>
+                    Descargar APK
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Agregar estilos al modal
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    `;
+    
+    // Agregar al DOM
+    document.body.appendChild(modal);
+    
+    // Animar entrada
+    setTimeout(() => {
+        modal.style.opacity = '1';
+    }, 10);
+    
+    // Prevenir scroll del body
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDownloadModal() {
+    const modal = document.querySelector('.download-modal');
+    if (modal) {
+        modal.style.opacity = '0';
+        setTimeout(() => {
+            modal.remove();
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+function confirmDownload() {
+    // Crear enlace de descarga
+    const link = document.createElement('a');
+    link.href = 'mapu.apk'; // Nombre del archivo APK
+    link.download = 'Mapu.apk';
+    link.style.display = 'none';
+    
+    // Agregar al DOM y hacer clic
+    document.body.appendChild(link);
+    link.click();
+    
+    // Limpiar
+    document.body.removeChild(link);
+    
+    // Cerrar modal
+    closeDownloadModal();
+    
+    // Mostrar notificación de éxito
+    showNotification('¡Descarga iniciada! Revisa tu carpeta de descargas.', 'success');
+    
+    // Log de descarga
+    SecurityLogger.logSecurityEvent('APK_DOWNLOAD', {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent
+    });
+}
+
 function scrollToFeatures() {
     const featuresSection = document.querySelector('.features');
     if (featuresSection) {
@@ -838,3 +940,6 @@ window.addEventListener('load', () => {
 // Exportar funciones para uso global
 window.scrollToDownload = scrollToDownload;
 window.scrollToFeatures = scrollToFeatures;
+window.downloadAPK = downloadAPK;
+window.closeDownloadModal = closeDownloadModal;
+window.confirmDownload = confirmDownload;
