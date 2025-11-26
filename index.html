@@ -607,6 +607,63 @@
         </div>
     </footer>
 
+    <!-- Chatbot Flotante -->
+    <div class="chatbot-container" id="chatbot-container">
+        <!-- Botón flotante del chatbot -->
+        <div class="chatbot-toggle" id="chatbot-toggle">
+            <i class="fas fa-comments"></i>
+            <span class="chatbot-notification" id="chatbot-notification"></span>
+        </div>
+        
+        <!-- Ventana del chat -->
+        <div class="chatbot-window" id="chatbot-window">
+            <div class="chatbot-header">
+                <div class="chatbot-avatar">
+                    <img src="mapu.svg" alt="Mapu" style="width: 18px; height: 18px;">
+                </div>
+                <div class="chatbot-info">
+                    <h4>Asistente Mapu</h4>
+                    <span class="chatbot-status">En línea</span>
+                </div>
+                <button class="chatbot-close" id="chatbot-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="message bot-message">
+                    <div class="message-avatar">
+                        <img src="mapu.svg" alt="Mapu" style="width: 14px; height: 14px;">
+                    </div>
+                    <div class="message-content">
+                        <p>👋 ¡Hola! ¿En qué puedo ayudarte hoy?</p>
+                        <div class="quick-options">
+                            <button class="quick-option" data-option="mapa">🗺️ Buscar mapa turístico</button>
+                            <button class="quick-option" data-option="funciona">❓ ¿Cómo funciona la app?</button>
+                            <button class="quick-option" data-option="recomendacion">⭐ Recomendaciones</button>
+                            <button class="quick-option" data-option="destinos">🔥 Destinos populares</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chatbot-input-container">
+                <div class="chatbot-input-wrapper">
+                    <input type="text" id="chatbot-input" placeholder="Escribe tu mensaje..." maxlength="500">
+                    <button id="chatbot-send" class="chatbot-send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="chatbot-categories">
+                    <button class="category-btn" data-category="playa">🌴 Playas</button>
+                    <button class="category-btn" data-category="naturaleza">🏞 Naturaleza</button>
+                    <button class="category-btn" data-category="cultura">🏛 Cultura</button>
+                    <button class="category-btn" data-category="gastronomia">🍴 Gastronomía</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="security-config.js"></script>
     <script src="script.js"></script>
 </body>
